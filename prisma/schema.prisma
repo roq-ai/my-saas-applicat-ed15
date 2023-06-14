@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account_manager {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String   @db.Uuid
+  seller_id  String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  seller     seller   @relation(fields: [seller_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model guest {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id       String   @db.Uuid
+  seller_id     String   @db.Uuid
+  access_status String   @db.VarChar(255)
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  updated_at    DateTime @default(now()) @db.Timestamp(6)
+  seller        seller   @relation(fields: [seller_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user          user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model keyword {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  keyword    String   @db.VarChar(255)
+  seller_id  String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  seller     seller   @relation(fields: [seller_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model seller {
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description     String?           @db.VarChar
+  image           String?           @db.VarChar
+  name            String            @db.VarChar(255)
+  created_at      DateTime          @default(now()) @db.Timestamp(6)
+  updated_at      DateTime          @default(now()) @db.Timestamp(6)
+  user_id         String            @db.Uuid
+  tenant_id       String            @db.VarChar(255)
+  account_manager account_manager[]
+  guest           guest[]
+  keyword         keyword[]
+  user            user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String            @unique @db.VarChar(255)
+  firstName       String?           @db.VarChar(255)
+  lastName        String?           @db.VarChar(255)
+  roq_user_id     String            @db.VarChar(255)
+  tenant_id       String            @db.VarChar(255)
+  created_at      DateTime          @default(now()) @db.Timestamp(6)
+  updated_at      DateTime          @default(now()) @db.Timestamp(6)
+  account_manager account_manager[]
+  guest           guest[]
+  seller          seller[]
+}
